@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Zoey Situ | Engineering Portfolio</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      line-height: 1.6;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 22px 8%;
+      border-bottom: 1px solid #30363d;
+    }
+
+    nav a {
+      color: #e6edf3;
+      text-decoration: none;
+      margin-left: 24px;
+    }
+
+    header {
+      padding: 100px 8%;
+      max-width: 850px;
+    }
+
+    header h1 {
+      font-size: 56px;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      color: #9da7b3;
+      font-size: 21px;
+    }
+
+    section {
+      padding: 50px 8%;
+    }
+
+    .projects {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+    }
+
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 28px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+    }
+
+    .card p {
+      color: #9da7b3;
+    }
+
+    .card a {
+      color: #58a6ff;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    footer {
+      padding: 40px 8%;
+      color: #9da7b3;
+      border-top: 1px solid #30363d;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <strong>Zoey Situ</strong>
+
+    <div>
+      <a href="#about">About</a>
+      <a href="#projects">Projects</a>
+      <a href="YOUR-LINKEDIN-URL">LinkedIn</a>
+      <a href="YOUR-RESUME-LINK">Resume</a>
+    </div>
+  </nav>
+
+  <header>
+    <h1>Hi, I'm Zoey.</h1>
+
+    <p>
+      Electrical Engineering student at the University of Waterloo
+      interested in analog, mixed-signal, embedded systems, and
+      digital hardware design.
+    </p>
+  </header>
+
+  <section id="about">
+    <h2>About Me</h2>
+
+    <p>
+      I enjoy designing, integrating, and debugging hardware across
+      PCB, embedded, and transistor-level systems. My experience
+      includes avionics communication hardware, analog IC design,
+      STM32 development, and engineering research.
+    </p>
+  </section>
+
+  <section id="projects">
+    <h2>Featured Projects</h2>
+
+    <div class="projects">
+
+      <div class="card">
+        <h3>ARINC-429 Trigger & Interface Board</h3>
+
+        <p>
+          Four-layer mixed-signal PCB for interfacing an STM32
+          microcontroller with an ARINC-429 avionics bus.
+        </p>
+
+        <a href="arinc-429.html">View Project →</a>
+      </div>
+
+      <div class="card">
+        <h3>PDK-Agnostic Subthreshold CMOS Voltage Reference</h3>
+
+        <p>
+          Subthreshold analog IC design using PTAT/CTAT compensation,
+          a two-stage error amplifier, SKY130 models, and ngspice.
+        </p>
+
+        <a href="bandgap-reference.html">View Project →</a>
+      </div>
+
+      <div class="card">
+        <h3>Embedded Systems Control Project</h3>
+
+        <p>
+          STM32-based sensing and control system using timers, PWM,
+          ADC, UART, interrupts, motors, and hardware debugging.
+        </p>
+
+        <a href="embedded-systems.html">View Project →</a>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 Zoey Situ</p>
+  </footer>
+
+</body>
+</html>
