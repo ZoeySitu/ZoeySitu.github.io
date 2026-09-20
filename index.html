@@ -1,165 +1,689 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Zoey Situ | Engineering Portfolio</title>
+  <meta
+    name="description"
+    content="Zoey Situ — Electrical Engineering student specializing in analog, mixed-signal, embedded systems, PCB design, and digital hardware."
+  >
+
+  <title>Zoey Situ | Electrical Engineering Portfolio</title>
+
+  <!-- Professional fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  >
 
   <style>
+    :root {
+      --background: #090d14;
+      --surface: #111722;
+      --surface-hover: #151d2a;
+      --border: #263143;
+      --text: #f1f5f9;
+      --muted: #9caabd;
+      --accent: #65b5ff;
+      --accent-light: #a5d5ff;
+      --accent-background: rgba(101, 181, 255, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0d1117;
-      color: #e6edf3;
-      line-height: 1.6;
+      background:
+        radial-gradient(
+          circle at 85% 5%,
+          rgba(47, 129, 247, 0.12),
+          transparent 30%
+        ),
+        var(--background);
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+      line-height: 1.65;
     }
+
+    h1,
+    h2,
+    h3,
+    .logo {
+      font-family: "Space Grotesk", sans-serif;
+      letter-spacing: -0.035em;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .container {
+      width: min(1120px, 84%);
+      margin: 0 auto;
+    }
+
+    /* Navigation */
 
     nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 22px 8%;
-      border-bottom: 1px solid #30363d;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(38, 49, 67, 0.8);
+      background: rgba(9, 13, 20, 0.88);
+      backdrop-filter: blur(14px);
     }
 
-    nav a {
-      color: #e6edf3;
-      text-decoration: none;
-      margin-left: 24px;
+    .nav-container {
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px;
     }
+
+    .logo {
+      font-size: 21px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+
+    /* Hero */
 
     header {
-      padding: 100px 8%;
-      max-width: 850px;
+      min-height: 610px;
+      display: flex;
+      align-items: center;
+      padding: 100px 0 80px;
+    }
+
+    .hero-content {
+      max-width: 870px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 24px;
+      padding: 7px 13px;
+      border: 1px solid rgba(101, 181, 255, 0.28);
+      border-radius: 999px;
+      background: var(--accent-background);
+      color: var(--accent-light);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #5ee6a8;
+      box-shadow: 0 0 12px rgba(94, 230, 168, 0.8);
     }
 
     header h1 {
-      font-size: 56px;
-      margin-bottom: 10px;
+      max-width: 800px;
+      margin: 0 0 22px;
+      font-size: clamp(48px, 8vw, 76px);
+      line-height: 1.04;
+    }
+
+    .highlight {
+      color: var(--accent);
     }
 
     header p {
-      color: #9da7b3;
-      font-size: 21px;
+      max-width: 740px;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(18px, 2.5vw, 22px);
+      line-height: 1.7;
     }
 
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 36px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 21px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+    }
+
+    .button-primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #06111c;
+    }
+
+    .button-primary:hover {
+      background: var(--accent-light);
+    }
+
+    .button-secondary {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .button-secondary:hover {
+      border-color: var(--accent);
+      background: var(--surface-hover);
+    }
+
+    /* General sections */
+
     section {
-      padding: 50px 8%;
+      padding: 90px 0;
+      scroll-margin-top: 74px;
+    }
+
+    .section-label {
+      margin-bottom: 8px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    section h2 {
+      margin: 0 0 28px;
+      font-size: clamp(32px, 5vw, 44px);
+      line-height: 1.15;
+    }
+
+    /* About */
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr);
+      gap: 70px;
+      align-items: start;
+    }
+
+    .about-text {
+      max-width: 700px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .skill {
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface);
+      color: #c8d3e0;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* Projects */
+
+    .projects-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 30px;
+      margin-bottom: 34px;
+    }
+
+    .projects-heading h2 {
+      margin-bottom: 0;
+    }
+
+    .projects-intro {
+      max-width: 470px;
+      margin: 0;
+      color: var(--muted);
     }
 
     .projects {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 25px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
     }
 
     .card {
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 12px;
-      padding: 28px;
+      min-height: 330px;
+      display: flex;
+      flex-direction: column;
+      padding: 30px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.02),
+          transparent
+        ),
+        var(--surface);
+      transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        background 0.25s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(101, 181, 255, 0.65);
+      background-color: var(--surface-hover);
+    }
+
+    .project-number {
+      margin-bottom: 30px;
+      color: var(--accent);
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 14px;
+      font-weight: 600;
     }
 
     .card h3 {
-      margin-top: 0;
+      margin: 0 0 16px;
+      font-size: 23px;
+      line-height: 1.3;
     }
 
     .card p {
-      color: #9da7b3;
+      margin: 0 0 26px;
+      color: var(--muted);
+      font-size: 15px;
     }
 
     .card a {
-      color: #58a6ff;
-      font-weight: bold;
+      margin-top: auto;
+      color: var(--accent);
+      font-size: 15px;
+      font-weight: 600;
       text-decoration: none;
     }
 
+    .card a:hover {
+      color: var(--accent-light);
+    }
+
+    /* Footer */
+
     footer {
-      padding: 40px 8%;
-      color: #9da7b3;
-      border-top: 1px solid #30363d;
+      margin-top: 70px;
+      padding: 34px 0;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 22px;
+    }
+
+    .footer-links a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+
+    /* Mobile layout */
+
+    @media (max-width: 900px) {
+      .projects {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        min-height: auto;
+      }
+
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 38px;
+      }
+
+      .projects-heading {
+        display: block;
+      }
+
+      .projects-intro {
+        margin-top: 18px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .container {
+        width: min(90%, 1120px);
+      }
+
+      .nav-container {
+        min-height: auto;
+        padding: 18px 0;
+        align-items: flex-start;
+      }
+
+      .nav-links {
+        max-width: 230px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 10px 18px;
+      }
+
+      .nav-links a {
+        font-size: 13px;
+      }
+
+      header {
+        min-height: auto;
+        padding: 90px 0 55px;
+      }
+
+      section {
+        padding: 65px 0;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .button {
+        width: 100%;
+      }
+
+      .footer-content {
+        align-items: flex-start;
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 
 <body>
 
+  <!-- Navigation -->
   <nav>
-    <strong>Zoey Situ</strong>
+    <div class="container nav-container">
+      <a class="logo" href="#">Zoey Situ</a>
 
-    <div>
-      <a href="#about">About</a>
-      <a href="#projects">Projects</a>
-      <a href="YOUR-LINKEDIN-URL">LinkedIn</a>
-      <a href="YOUR-RESUME-LINK">Resume</a>
+      <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+
+        <a
+          href="https://www.linkedin.com/in/zoeysitu"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          LinkedIn
+        </a>
+
+        <a
+          href="Zoey_Situ_Resume.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Résumé
+        </a>
+      </div>
     </div>
   </nav>
 
-  <header>
-    <h1>Hi, I'm Zoey.</h1>
+  <main>
 
-    <p>
-      Electrical Engineering student at the University of Waterloo
-      interested in analog, mixed-signal, embedded systems, and
-      digital hardware design.
-    </p>
-  </header>
+    <!-- Hero -->
+    <header>
+      <div class="container">
+        <div class="hero-content">
 
-  <section id="about">
-    <h2>About Me</h2>
+          <div class="eyebrow">
+            <span class="status-dot"></span>
+            Electrical Engineering Portfolio
+          </div>
 
-    <p>
-      I enjoy designing, integrating, and debugging hardware across
-      PCB, embedded, and transistor-level systems. My experience
-      includes avionics communication hardware, analog IC design,
-      STM32 development, and engineering research.
-    </p>
-  </section>
+          <h1>
+            Hi, I'm Zoey.
+            I design and debug
+            <span class="highlight">hardware systems.</span>
+          </h1>
 
-  <section id="projects">
-    <h2>Featured Projects</h2>
+          <p>
+            Electrical Engineering student at the University of Waterloo
+            interested in analog and mixed-signal IC design, embedded systems,
+            PCB development, and digital hardware.
+          </p>
 
-    <div class="projects">
+          <div class="hero-actions">
+            <a class="button button-primary" href="#projects">
+              Explore My Projects
+            </a>
 
-      <div class="card">
-        <h3>ARINC-429 Trigger & Interface Board</h3>
+            <a
+              class="button button-secondary"
+              href="Zoey_Situ_Resume.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View Résumé
+            </a>
 
-        <p>
-          Four-layer mixed-signal PCB for interfacing an STM32
-          microcontroller with an ARINC-429 avionics bus.
-        </p>
+            <a
+              class="button button-secondary"
+              href="https://www.linkedin.com/in/zoeysitu"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Connect on LinkedIn
+            </a>
+          </div>
 
-        <a href="arinc-429.html">View Project →</a>
+        </div>
       </div>
+    </header>
 
-      <div class="card">
-        <h3>PDK-Agnostic Subthreshold CMOS Voltage Reference</h3>
+    <!-- About -->
+    <section id="about">
+      <div class="container">
 
-        <p>
-          Subthreshold analog IC design using PTAT/CTAT compensation,
-          a two-stage error amplifier, SKY130 models, and ngspice.
-        </p>
+        <div class="section-label">About</div>
 
-        <a href="bandgap-reference.html">View Project →</a>
+        <div class="about-grid">
+
+          <div>
+            <h2>Engineering across analog, digital, and embedded systems.</h2>
+
+            <p class="about-text">
+              I enjoy designing, integrating, and debugging hardware from
+              transistor-level circuits to complete embedded platforms. My
+              experience includes analog IC design, mixed-signal PCB development,
+              avionics communication hardware, STM32 firmware, simulation, and
+              laboratory validation.
+            </p>
+          </div>
+
+          <div class="skills">
+            <span class="skill">Analog IC Design</span>
+            <span class="skill">Mixed-Signal Design</span>
+            <span class="skill">PCB Design</span>
+            <span class="skill">KiCad</span>
+            <span class="skill">STM32</span>
+            <span class="skill">Embedded C</span>
+            <span class="skill">SPI / UART</span>
+            <span class="skill">Verilog</span>
+            <span class="skill">Xschem</span>
+            <span class="skill">ngspice</span>
+            <span class="skill">SKY130</span>
+            <span class="skill">Hardware Debugging</span>
+          </div>
+
+        </div>
       </div>
+    </section>
 
-      <div class="card">
-        <h3>Embedded Systems Control Project</h3>
+    <!-- Projects -->
+    <section id="projects">
+      <div class="container">
 
-        <p>
-          STM32-based sensing and control system using timers, PWM,
-          ADC, UART, interrupts, motors, and hardware debugging.
-        </p>
+        <div class="projects-heading">
+          <div>
+            <div class="section-label">Selected Work</div>
+            <h2>Featured Projects</h2>
+          </div>
 
-        <a href="embedded-systems.html">View Project →</a>
+          <p class="projects-intro">
+            A selection of projects involving analog IC design, avionics
+            communication, embedded development, PCB design, and hardware testing.
+          </p>
+        </div>
+
+        <div class="projects">
+
+          <!-- ARINC-429 -->
+          <article class="card">
+            <div class="project-number">01 / AVIONICS HARDWARE</div>
+
+            <h3>ARINC-429 Trigger &amp; Interface Board</h3>
+
+            <p>
+              A four-layer mixed-signal PCB integrating an HI-35850 ARINC-429
+              transceiver with an STM32 through SPI for avionics bus monitoring,
+              message decoding, and configurable trigger generation.
+            </p>
+
+            <a href="arinc-429.html">
+              View Project →
+            </a>
+          </article>
+
+          <!-- Bandgap reference -->
+          <article class="card">
+            <div class="project-number">02 / ANALOG IC DESIGN</div>
+
+            <h3>PDK-Agnostic Subthreshold CMOS Voltage Reference</h3>
+
+            <p>
+              A subthreshold CMOS voltage-reference architecture combining
+              PTAT/CTAT compensation, a two-stage error amplifier, startup
+              circuitry, SKY130 transistor models, and temperature and PSRR
+              characterization.
+            </p>
+
+            <a href="bandgap-reference.html">
+              View Project →
+            </a>
+          </article>
+
+          <!-- Embedded systems -->
+          <article class="card">
+            <div class="project-number">03 / EMBEDDED SYSTEMS</div>
+
+            <h3>STM32 Embedded Sensing &amp; Control Platform</h3>
+
+            <p>
+              An STM32-based control platform integrating timers, PWM, ADC,
+              UART, interrupts, motors, ultrasonic sensing, voltage-level
+              translation, and oscilloscope-based hardware validation.
+            </p>
+
+            <a href="embedded-systems.html">
+              View Project →
+            </a>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-content">
+
+      <span>© 2026 Zoey Situ</span>
+
+      <div class="footer-links">
+        <a
+          href="https://www.linkedin.com/in/zoeysitu"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          LinkedIn
+        </a>
+
+        <a
+          href="Zoey_Situ_Resume.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Résumé
+        </a>
       </div>
 
     </div>
-  </section>
-
-  <footer>
-    <p>© 2026 Zoey Situ</p>
   </footer>
 
 </body>
