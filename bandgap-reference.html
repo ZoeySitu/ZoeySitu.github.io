@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="pink-yellow">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MOSFET-Only Subthreshold Bandgap Reference | Zoey Situ</title>
+  <meta name="description" content="A MOSFET-only subthreshold bandgap voltage reference in SKY130 for a UWASIC Tiny Tapeout submission: about 630&nbsp;mV output, roughly 89&nbsp;ppm/°C from −40 to 120&nbsp;°C, and 65&nbsp;dB low-frequency PSRR in simulation.">
+  <meta property="og:title" content="MOSFET-Only Subthreshold Bandgap Reference | Zoey Situ">
+  <meta property="og:description" content="Analog IC design in SKY130: a bandgap reference built from subthreshold MOSFETs, with an error amplifier, Miller compensation and full temperature and PSRR characterization.">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="images/bandgap-final-schematic-annotated.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="project">
+
+<nav>
+  <div class="container nav-container">
+    <a class="logo" href="index.html">Zoey Situ</a>
+    <div class="nav-links">
+      <a href="index.html#about">About me</a>
+      <a href="index.html#projects">Projects</a>
+      <a href="https://www.linkedin.com/in/zoeysitu" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a href="Zoey_Situ_Resume.pdf" target="_blank" rel="noopener noreferrer">Résumé</a>
+    </div>
+  </div>
+</nav>
+
+<main class="container">
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero" id="overview" aria-labelledby="title">
+    <div class="eyebrow"><span class="status-dot"></span>Analog IC Design · Active</div>
+    <h1 id="title">MOSFET-Only Subthreshold Bandgap Voltage Reference</h1>
+    <p class="lede">A temperature-stable voltage reference built without bipolar transistors, designed and simulated in SKY130 for a UWASIC Tiny Tapeout submission.</p>
+
+    <dl class="facts">
+      <div><dt>Project</dt><dd>UWASIC, the University of Waterloo Analog &amp; Systems IC Design Team</dd></div>
+      <div><dt>Team</dt><dd>Zoey Situ and Mehak Khan, with design review from Henry Wu</dd></div>
+      <div><dt>Contribution</dt><dd>We shared the design, integration, debugging and characterization. Mehak led the Verilog-A behavioral model, and its results are shared here.</dd></div>
+      <div><dt>Target</dt><dd>Tiny Tapeout submission</dd></div>
+      <div><dt>Tools</dt><dd>Xschem, ngspice, SKY130 PDK</dd></div>
+    </dl>
+
+    <p class="status"><strong>Status: active.</strong> The transistor-level reference works from −40&nbsp;°C to 120&nbsp;°C in pre-layout simulation. PSRR tuning and physical verification are still in progress.</p>
+
+    <figure class="schematic">
+      <a href="images/bandgap-final-schematic.png" aria-label="Open the full-size schematic without annotations">
+        <img src="images/bandgap-final-schematic-annotated.png" width="1952" height="1438" alt="Final Xschem schematic of the bandgap reference, with four regions outlined: the error amplifier (M2 to M6), output device M7, the Miller compensation network C1 and R5, the reference core (M0, M1 and resistors R0 to R4), and the startup current source I0.">
+      </a>
+      <figcaption>Final transistor-level schematic from Xschem, annotated by block. Select the image to open the original.</figcaption>
+      <ul class="legend" aria-label="Schematic colour key">
+        <li><i class="c-core"></i>Reference core</li>
+        <li><i class="c-amp"></i>Error amplifier</li>
+        <li><i class="c-out"></i>Output device and compensation</li>
+        <li><i class="c-start"></i>Startup kick (simulation)</li>
+      </ul>
+    </figure>
+  </section>
+
+  <div class="layout">
+
+    <nav class="toc" aria-label="On this page">
+      <p>On this page</p>
+      <ol>
+        <li><a href="#problem">Problem</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#characterization">Device characterization</a></li>
+        <li><a href="#error-amplifier">Error amplifier</a></li>
+        <li><a href="#debugging">Integration and debugging</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#verilog-a">Verilog-A model</a></li>
+        <li><a href="#methodology">Methodology</a></li>
+        <li><a href="#next">Next steps</a></li>
+      </ol>
+    </nav>
+
+    <article class="article">
+
+      <!-- ===================== PROBLEM ===================== -->
+      <section id="problem" aria-labelledby="h-problem">
+        <h2 id="h-problem">Problem</h2>
+        <p>Every analog block on a chip needs a voltage that does not move when the temperature or the supply does. We set out to build that reference from a <strong>MOSFET-only subthreshold topology</strong>, so the design does not depend on process-specific bipolar devices and the method can be repeated in other CMOS processes.</p>
+        <p>The reference runs from a 1.8&nbsp;V supply, targets more than 40&nbsp;dB of PSRR, and is characterized from −40&nbsp;°C to 120&nbsp;°C in SKY130. It is one block of a larger mixed-signal Tiny Tapeout design.</p>
+      </section>
+
+      <!-- ===================== ARCHITECTURE ===================== -->
+      <section id="architecture" aria-labelledby="h-arch">
+        <h2 id="h-arch">Circuit architecture</h2>
+
+        <h3>How the reference works</h3>
+        <p>In weak inversion a MOSFET's drain current depends exponentially on its gate-source voltage, the same way a BJT's current depends on V<sub>BE</sub>. Two devices of different size carrying the same current therefore differ in V<sub>GS</sub> by a voltage that is proportional to absolute temperature (PTAT). A single V<sub>GS</sub>, meanwhile, falls with temperature (CTAT). Adding a weighted PTAT term to the CTAT term flattens the output.</p>
+
+        <div class="eq" role="group" aria-label="Design equations">
+          ΔV<sub>GS</sub> = η · V<sub>T</sub> · ln N &nbsp;&nbsp;<span class="note">N = 8, η ≈ 1.48, so ΔV<sub>GS</sub> ≈ 79.5&nbsp;mV at room temperature</span><br>
+          I = ΔV<sub>GS</sub> / R0<br>
+          <b>V<sub>REF</sub> = V<sub>GS0</sub>(T) + I(T) · (R1 + R3)</b>
+        </div>
+
+        <figure class="narrow">
+          <img src="images/ptat-ctat-concept.png" width="1440" height="768" alt="Conceptual plot: a falling CTAT line and a rising PTAT line sum to a flat VREF line.">
+          <figcaption>The idea, drawn conceptually (not simulation data). The two slopes are weighted by the ratio (R1 + R3) / R0 so that they cancel to first order. In the final circuit R0 = 530&nbsp;kΩ and R1 = R3 = 945&nbsp;kΩ, a ratio of about 3.6, tuned in simulation.</figcaption>
+        </figure>
+
+        <h3>How the circuit closes the loop</h3>
+        <ul>
+          <li>Two branches hang from the V<sub>REF</sub> node. The left branch is R3, R1, R0 and M0. The right branch is R4, R2 and M1, where M1 is eight times the size of M0.</li>
+          <li>The error amplifier compares the mid-nodes of the two branches (the R3/R1 and R4/R2 junctions). Because R3 = R4, forcing those nodes equal forces the two branch currents equal.</li>
+          <li>The amplifier's output drives PMOS M7, which supplies both branches from VDD. V<sub>REF</sub> is M7's drain.</li>
+          <li>With equal currents, M0 and M1 differ in V<sub>GS</sub> by ΔV<sub>GS</sub>. R0 turns that into the PTAT current, and R1 + R3 turn the current back into a voltage that adds to V<sub>GS0</sub>.</li>
+          <li>A 1&nbsp;pF capacitor (C1) in series with a 10&nbsp;kΩ resistor (R5) links the amplifier output to V<sub>REF</sub> for Miller compensation.</li>
+          <li>The circuit has a zero-current state, so in simulation a PWL current source (I0) injects 100&nbsp;nA into the M0/M2 gate node for the first 5&nbsp;µs and then ramps to zero.</li>
+        </ul>
+
+        <figure>
+          <img src="images/bandgap-architecture.png" width="1632" height="918" alt="Block diagram: an error amplifier senses the two branch mid-nodes of the reference core and drives output device M7, which supplies the core and sets VREF. A Miller compensation network connects the amplifier output to VREF, and a startup current source injects into the core.">
+          <figcaption>Block diagram of the final circuit, drawn from the schematic above.</figcaption>
+        </figure>
+
+        <div class="table-wrap">
+          <table class="results">
+            <caption>Component values in the final schematic</caption>
+            <thead><tr><th scope="col">Component</th><th scope="col">Role</th><th scope="col" class="num">Value / size (m × W/L, µm)</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">M0</th><td>Core device, sets the CTAT voltage</td><td class="num">nfet_01v8, 1 × 20/1</td></tr>
+              <tr><th scope="row">M1</th><td>Core device, 8× M0, creates ΔV<sub>GS</sub></td><td class="num">nfet_01v8, 8 × 20/1</td></tr>
+              <tr><th scope="row">M2</th><td>Amplifier tail current source</td><td class="num">nfet_01v8, 1 × 5/1</td></tr>
+              <tr><th scope="row">M3, M4</th><td>Amplifier input pair</td><td class="num">nfet_01v8, 1 × 5/1 each</td></tr>
+              <tr><th scope="row">M5, M6</th><td>Amplifier current-mirror load</td><td class="num">pfet_01v8, 1 × 15/1 each</td></tr>
+              <tr><th scope="row">M7</th><td>Output device</td><td class="num">pfet_01v8, 1 × 1/1</td></tr>
+              <tr><th scope="row">R0</th><td>Sets the PTAT current</td><td class="num">530&nbsp;kΩ</td></tr>
+              <tr><th scope="row">R1, R3, R4</th><td>Scale the PTAT current into a voltage; R3 = R4 matches the branches</td><td class="num">945&nbsp;kΩ each</td></tr>
+              <tr><th scope="row">R2</th><td>Right-branch resistor</td><td class="num">55&nbsp;kΩ</td></tr>
+              <tr><th scope="row">C1, R5</th><td>Miller compensation</td><td class="num">1&nbsp;pF, 10&nbsp;kΩ</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===================== CHARACTERIZATION ===================== -->
+      <section id="characterization" aria-labelledby="h-char">
+        <h2 class="mark mark--core" id="h-char">SKY130 device characterization</h2>
+        <p>We measured the SKY130 devices before sizing anything, instead of reusing constants from the original reference design. Sweeps of the 1.8&nbsp;V NMOS (<code>nfet_01v8</code>) gave three numbers the design equations depend on:</p>
+        <ul>
+          <li><strong>Subthreshold slope factor:</strong> η ≈ 1.48, from the slope of the log-current curve.</li>
+          <li><strong>CTAT slope:</strong> ∂V<sub>GS</sub>/∂T ≈ −0.63&nbsp;mV/°C, from a temperature sweep of V<sub>GS</sub> at fixed bias (about 695&nbsp;mV at −20&nbsp;°C and 632&nbsp;mV at 80&nbsp;°C).</li>
+          <li><strong>Weak-inversion limit:</strong> for a unit-size device (W/L = 1/1) the log-current curve stays straight up to roughly 3&nbsp;nA. Above that the device leaves weak inversion, the exponential model stops holding, and the PTAT equations lose accuracy. The limit scales with W/L.</li>
+        </ul>
+        <figure>
+          <img src="images/subthreshold-characterization.png" width="1600" height="710" alt="Two plots from ngspice. Left: log of drain current against gate voltage for an NMOS, used to extract the slope factor. Right: log drain current against gate voltage for a W/L = 1/1 device, used to find where the weak-inversion region ends.">
+          <figcaption>Subthreshold sweeps of <code>nfet_01v8</code>. Left: slope-factor extraction. Right: the straight, exponential region and where it ends for a unit-size device.</figcaption>
+        </figure>
+      </section>
+
+      <!-- ===================== ERROR AMPLIFIER ===================== -->
+      <section id="error-amplifier" aria-labelledby="h-amp">
+        <h2 class="mark mark--amp" id="h-amp">Error amplifier</h2>
+        <p>The amplifier is a five-transistor differential stage: NMOS input pair M3/M4, PMOS current-mirror load M5/M6 and NMOS tail source M2. We designed and verified it on its own testbench before connecting it to the core.</p>
+
+        <h3>Hand calculation</h3>
+        <ol class="steps">
+          <li>Identify the nodes: the inputs are the gates of M3 and M4, and the output is the drain of M6, which drives the gate of M7.</li>
+          <li>Pick a design point of 1.8&nbsp;V supply, about 10&nbsp;µA of tail current and roughly 150&nbsp;mV of overdrive, so each side carries 5&nbsp;µA and g<sub>m</sub> = 2I<sub>D</sub>/V<sub>ov</sub> ≈ 67&nbsp;µS.</li>
+          <li>Start with L = 1&nbsp;µm and estimate gain from A<sub>v</sub> ≈ g<sub>m</sub>r<sub>o</sub>, aiming for 40 to 60&nbsp;dB.</li>
+          <li>Check that every device stays in saturation, then move to simulation.</li>
+        </ol>
+
+        <h3>DC bring-up</h3>
+        <p>The first operating-point run showed the tail source M2 in triode, with almost no drain-source voltage across it. Lowering its bias voltage moved it into saturation, and every device in the amplifier then passed the region check.</p>
+        <div class="table-wrap">
+          <table class="results">
+            <caption>Transistor regions in the standalone testbench (values from ngspice, rounded)</caption>
+            <thead><tr><th scope="col">Device</th><th scope="col" class="num">V<sub>DS</sub></th><th scope="col" class="num">V<sub>DS,sat</sub></th><th scope="col">Region</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">M2, first bias</th><td class="num">≈ 3&nbsp;mV</td><td class="num">≈ 112&nbsp;mV</td><td>Triode (fails)</td></tr>
+              <tr><th scope="row">M2, V<sub>BIAS</sub> = 0.5&nbsp;V</th><td class="num">≈ 69&nbsp;mV</td><td class="num">≈ 41&nbsp;mV</td><td>Saturation</td></tr>
+              <tr><th scope="row">M3, M4</th><td class="num">≈ 0.95&nbsp;V</td><td class="num">≈ 40&nbsp;mV</td><td>Saturation</td></tr>
+              <tr><th scope="row">M5, M6</th><td class="num">≈ 0.78&nbsp;V</td><td class="num">≈ 43&nbsp;mV</td><td>Saturation</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Gain and bandwidth</h3>
+        <p>A DC sweep of one input around 500&nbsp;mV moved the output from about 1.7&nbsp;V down to about 0.1&nbsp;V, a slope near −105&nbsp;V/V, or about 40&nbsp;dB. The AC response confirmed it:</p>
+        <ul>
+          <li><strong>41&nbsp;dB</strong> low-frequency gain;</li>
+          <li>first dominant pole around <strong>200–500&nbsp;kHz</strong>;</li>
+          <li>unity-gain frequency on the order of <strong>10&nbsp;MHz</strong>, with a second pole further out.</li>
+        </ul>
+        <figure class="dark narrow">
+          <img src="images/error-amp-dc-transfer.png" width="1209" height="1021" alt="ngspice DC transfer plot: amplifier output voltage falls from about 1.7 volts to about 0.1 volts as one input is swept from 490 to 510 millivolts.">
+          <figcaption>DC transfer: output against differential input, swept 490–510&nbsp;mV around 500&nbsp;mV.</figcaption>
+        </figure>
+        <figure>
+          <img src="images/error-amp-bode.png" width="1600" height="704" alt="Bode plots of the standalone error amplifier: gain of about 41&nbsp;dB rolling off from a few hundred kilohertz, and the matching phase in radians.">
+          <figcaption>AC response of the standalone amplifier: gain in dB (left) and phase in radians (right), 1&nbsp;Hz to 1&nbsp;GHz.</figcaption>
+        </figure>
+        <p class="callout">The standalone testbench biases M2 from a DC source. In the full reference, M2 shares its gate node with core device M0, so the amplifier is biased by the core. Measuring loop gain and phase margin in the full circuit is the next step for the compensation work below.</p>
+      </section>
+
+      <!-- ===================== DEBUGGING ===================== -->
+      <section id="debugging" aria-labelledby="h-debug">
+        <h2 id="h-debug">Integration and debugging</h2>
+        <p>Putting the core and the amplifier together did not work the first time. The log below is how the design converged.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">What we saw</th><th scope="col">What we did</th><th scope="col">Outcome</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>First combined temperature sweep: V<sub>REF</sub> rose with temperature, so the PTAT term was too strong.</td>
+                <td>Increased R0 to weaken the PTAT term.</td>
+                <td>Almost no change in slope.</td>
+              </tr>
+              <tr>
+                <td>The resistor change was not enough, which pointed at the topology and the constants.</td>
+                <td>Temporarily removed output device M7 to isolate the loop, and recalculated the resistors from the SKY130 values we had measured rather than the original design's process constants.</td>
+                <td>Total variation came down to 12.4&nbsp;mV in an intermediate iteration.</td>
+              </tr>
+              <tr>
+                <td>Swept R0 and compared curves: low R0 gave a rising curve, high R0 a falling one.</td>
+                <td>Tuned the resistor ratio toward the crossover between the two.</td>
+                <td>Final variation of about 9&nbsp;mV over −40 to 120&nbsp;°C.</td>
+              </tr>
+              <tr>
+                <td>Amplifier tail source M2 sat in triode on its standalone testbench.</td>
+                <td>Lowered its bias voltage and re-checked every region.</td>
+                <td>All amplifier devices in saturation.</td>
+              </tr>
+              <tr>
+                <td>Supply-to-output response peaks near 100&nbsp;kHz.</td>
+                <td>Compared the amplifier's AC response with the peak to relate it to loop bandwidth and compensation.</td>
+                <td>Open, and the main item in Next steps.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===================== RESULTS ===================== -->
+      <section id="results" aria-labelledby="h-results">
+        <h2 id="h-results">Results</h2>
+        <p>All results are pre-layout ngspice simulations of the schematic above.</p>
+
+        <h3>Temperature stability</h3>
+        <p>V<sub>REF</sub> sits near <strong>630&nbsp;mV</strong>. Over −40&nbsp;°C to 120&nbsp;°C it moves about <strong>9&nbsp;mV</strong> peak to peak, from 636.7&nbsp;mV at −40&nbsp;°C down to a minimum of 627.6&nbsp;mV near 80&nbsp;°C and back up to about 630&nbsp;mV at 120&nbsp;°C. By the box method that is an effective temperature coefficient of about <strong>89&nbsp;ppm/°C</strong>:</p>
+        <div class="eq">TC ≈ ΔV<sub>REF</sub> / (V<sub>REF</sub> · ΔT) = 9&nbsp;mV / (0.63&nbsp;V × 160&nbsp;°C) ≈ 89&nbsp;ppm/°C</div>
+        <p>The curve is a shallow bowl rather than a straight line. First-order cancellation removed the linear drift, and the second-order curvature that remains is what sets the 9&nbsp;mV.</p>
+        <figure class="dark narrow">
+          <img src="images/bandgap-vref-temperature.png" width="1204" height="1018" alt="ngspice plot of VREF against temperature from −40 to 120 degrees Celsius: 636.7 millivolts at −40, a minimum of about 627.6 millivolts near 80, and about 630 at 120.">
+          <figcaption>Transistor-level V<sub>REF</sub> against temperature, −40&nbsp;°C to 120&nbsp;°C.</figcaption>
+        </figure>
+
+        <h3>Power-supply rejection</h3>
+        <p>At low frequency the supply-to-output transfer is about −65&nbsp;dB, so <strong>PSRR ≈ 65&nbsp;dB at 1–10&nbsp;Hz</strong>, above the 40&nbsp;dB target. Rejection then falls steadily as frequency rises: the target is met only over roughly the first few hundred hertz, the response reaches 0&nbsp;dB near 100&nbsp;kHz, peaks about <strong>+2&nbsp;dB around 100–150&nbsp;kHz</strong>, and settles near −3&nbsp;dB above about 1&nbsp;MHz.</p>
+        <p>Peaking like this usually points to limited phase margin in the feedback loop, so the amplifier's bandwidth and the C1/R5 compensation are the levers for improving it.</p>
+        <figure class="dark narrow">
+          <img src="images/bandgap-psrr-transistor-level.png" width="1218" height="1024" alt="ngspice plot of supply-to-VREF gain in dB against frequency: about −65&nbsp;dB at 1 to 10 hertz, rising to a peak of about +2&nbsp;dB near 100 to 150 kilohertz and settling near −3&nbsp;dB above 1 megahertz.">
+          <figcaption>Transistor-level supply-to-V<sub>REF</sub> response, 1&nbsp;Hz to 1&nbsp;GHz.</figcaption>
+        </figure>
+
+        <div class="table-wrap">
+          <table class="results">
+            <caption>Key results</caption>
+            <thead><tr><th scope="col">Metric</th><th scope="col" class="num">Result</th><th scope="col">Conditions</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Nominal V<sub>REF</sub></th><td class="num">≈ 630&nbsp;mV</td><td>Transistor level, 1.8&nbsp;V supply</td></tr>
+              <tr><th scope="row">V<sub>REF</sub> variation</th><td class="num">≈ 9&nbsp;mV peak to peak</td><td>−40&nbsp;°C to 120&nbsp;°C</td></tr>
+              <tr><th scope="row">Temperature coefficient</th><td class="num">≈ 89&nbsp;ppm/°C</td><td>Box method</td></tr>
+              <tr><th scope="row">Low-frequency PSRR</th><td class="num">≈ 65&nbsp;dB</td><td>1–10&nbsp;Hz</td></tr>
+              <tr><th scope="row">PSRR peaking</th><td class="num">≈ +2&nbsp;dB</td><td>Near 100–150&nbsp;kHz</td></tr>
+              <tr><th scope="row">Error-amplifier gain</th><td class="num">≈ 41&nbsp;dB</td><td>Standalone testbench</td></tr>
+              <tr><th scope="row">Error-amplifier unity-gain frequency</th><td class="num">order of 10&nbsp;MHz</td><td>Standalone testbench</td></tr>
+              <tr><th scope="row">Verilog-A V<sub>REF</sub></th><td class="num">632.9&nbsp;mV</td><td>27&nbsp;°C, behavioral model</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===================== VERILOG-A ===================== -->
+      <section id="verilog-a" aria-labelledby="h-va">
+        <h2 id="h-va">Behavioral Verilog-A model</h2>
+        <p>Mehak led a behavioral Verilog-A model of the reference so the rest of the Tiny Tapeout design can be simulated at system level without the full transistor netlist. It has parameters for nominal V<sub>REF</sub>, temperature coefficient, supply sensitivity, output resistance and capacitance, and noise. It is compiled with OpenVAF and simulated in ngspice.</p>
+        <p>Parameterized from the transistor-level results, it gives V<sub>REF</sub> = 632.9&nbsp;mV at 27&nbsp;°C and about 65&nbsp;dB of PSRR.</p>
+        <div class="pair">
+          <figure>
+            <img src="images/verilog-a-temperature.png" width="1600" height="1000" alt="Plot of the Verilog-A model's VREF against temperature: a straight line falling from about 636.7 millivolts at −40 degrees to about 627.6 at 120 degrees.">
+            <figcaption>Verilog-A V<sub>REF</sub> against temperature: a straight line.</figcaption>
+          </figure>
+          <figure>
+            <img src="images/verilog-a-psrr.png" width="1600" height="1000" alt="Plot of the Verilog-A model's PSRR against frequency: flat at about 65&nbsp;dB from 1 hertz to several megahertz.">
+            <figcaption>Verilog-A PSRR against frequency: flat near 65&nbsp;dB.</figcaption>
+          </figure>
+        </div>
+        <p>The model is deliberately first order. It has no temperature curvature and no PSRR peaking, and those are exactly the behaviors the transistor-level circuit shows. That gap is why the transistor results above matter.</p>
+      </section>
+
+      <!-- ===================== METHODOLOGY ===================== -->
+      <section id="methodology" aria-labelledby="h-method">
+        <h2 id="h-method">Design methodology</h2>
+        <p>We sized the reference from SKY130 characterization instead of values taken from the original design. That makes the method repeatable: swap the PDK, re-run the device sweeps, and re-derive the weighting.</p>
+        <figure>
+          <img src="images/bandgap-design-flow.png" width="1513" height="714" alt="Flow diagram with six steps: characterize SKY130 devices, extract slope factor and CTAT slope, solve the PTAT/CTAT weighting, build and verify the core and amplifier, sweep temperature, and run AC and PSRR analysis. A loop returns from the sweep to the build step when the curve is PTAT-dominated.">
+          <figcaption>Design and debug flow. The dashed loop is the one we ran most often.</figcaption>
+        </figure>
+      </section>
+
+      <!-- ===================== NEXT ===================== -->
+      <section id="next" aria-labelledby="h-next">
+        <h2 id="h-next">Next steps</h2>
+        <ul>
+          <li>Measure loop gain and phase margin in the full circuit, then tune the amplifier bias and the C1/R5 network to reduce the PSRR peak near 100–150&nbsp;kHz.</li>
+          <li>Run process, voltage and temperature corners, plus Monte Carlo, to see how far the 9&nbsp;mV and 65&nbsp;dB results move.</li>
+          <li>Replace the simulation-only startup current source with a transistor-level startup circuit and verify start-up across supply ramps.</li>
+          <li>Lay out the block and re-check temperature and PSRR with extracted parasitics.</li>
+        </ul>
+      </section>
+
+    </article>
+  </div>
+</main>
+
+<footer>
+  <div class="container footer-content">
+    <span>© 2026 Zoey Situ</span>
+    <div class="footer-links">
+      <a href="index.html#projects">All projects</a>
+      <a href="https://www.linkedin.com/in/zoeysitu" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a href="Zoey_Situ_Resume.pdf" target="_blank" rel="noopener noreferrer">Résumé</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Highlight the contents link for the section currently in view.
+  (function () {
+    var links = document.querySelectorAll('.toc a');
+    if (!('IntersectionObserver' in window) || !links.length) return;
+    var byId = {};
+    links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          links.forEach(function (a) { a.classList.remove('is-active'); });
+          var a = byId[e.target.id]; if (a) a.classList.add('is-active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    Object.keys(byId).forEach(function (id) {
+      var el = document.getElementById(id); if (el) obs.observe(el);
+    });
+  })();
+</script>
+</body>
+</html>

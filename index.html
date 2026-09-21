@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="pink-yellow">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="description"
+    content="Zoey Situ — Electrical Engineering student specializing in analog, mixed-signal, embedded systems, PCB design, and digital hardware."
+  >
+
+  <title>Zoey Situ | Electrical Engineering Portfolio</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- Shared styles and colour theme (change data-theme on the <html> tag above) -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="home">
+
+  <!-- Navigation -->
+  <nav>
+    <div class="container nav-container">
+      <a class="logo" href="index.html">Zoey Situ</a>
+
+      <div class="nav-links">
+        <a href="#about">About me</a>
+        <a href="#projects">Projects</a>
+
+        <a
+          href="https://www.linkedin.com/in/zoeysitu"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          LinkedIn
+        </a>
+
+        <a
+          href="Zoey_Situ_Resume.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Résumé
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- Hero -->
+    <header>
+      <div class="container">
+        <div class="hero-content">
+
+          <div class="eyebrow">
+            <span class="status-dot"></span>
+            Electrical Engineering Portfolio
+          </div>
+
+          <h1>
+            Hi, I'm Zoey.
+            I design and debug
+            <span class="highlight">hardware systems.</span>
+          </h1>
+
+          <p>
+            Electrical Engineering student at the University of Waterloo
+            interested in analog and mixed-signal IC design, embedded systems,
+            PCB development, and digital hardware.
+          </p>
+
+          <div class="hero-actions">
+            <a class="button button-primary" href="#projects">
+              Explore My Projects
+            </a>
+
+            <a
+              class="button button-secondary"
+              href="Zoey_Situ_Resume.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View Résumé
+            </a>
+
+            <a
+              class="button button-secondary"
+              href="https://www.linkedin.com/in/zoeysitu"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Connect on LinkedIn
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </header>
+
+    <!-- About -->
+    <section id="about">
+      <div class="container">
+
+        <div class="section-label">About me</div>
+
+        <div class="about-grid">
+
+          <div>
+            <h2>Engineering across analog, digital, and embedded systems.</h2>
+
+            <p class="about-text">
+              I enjoy designing, integrating, and debugging hardware from
+              transistor-level circuits to complete embedded platforms. My
+              experience includes analog IC design, mixed-signal PCB development,
+              avionics communication hardware, STM32 firmware, simulation, and
+              laboratory validation.
+            </p>
+          </div>
+
+          <div class="skills">
+            <span class="skill">Analog IC Design</span>
+            <span class="skill">Mixed-Signal Design</span>
+            <span class="skill">PCB Design</span>
+            <span class="skill">KiCad</span>
+            <span class="skill">STM32</span>
+            <span class="skill">SPI / UART</span>
+            <span class="skill">Xschem</span>
+            <span class="skill">ngspice</span>
+            <span class="skill">SKY130</span>
+            <span class="skill">Hardware Debugging</span>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <section id="projects">
+      <div class="container">
+
+        <div class="projects-heading">
+          <div>
+            <div class="section-label">Selected Work</div>
+            <h2>Featured Projects</h2>
+          </div>
+
+          <p class="projects-intro">
+            A selection of projects involving analog IC design, avionics
+            communication, embedded development, PCB design, and hardware testing.
+          </p>
+        </div>
+
+        <div class="projects">
+
+          <!-- ARINC-429 -->
+          <article class="card">
+            <div class="project-number">01 / AVIONICS HARDWARE</div>
+
+            <h3>ARINC-429 Trigger &amp; Interface Board</h3>
+
+            <p>
+              A four-layer mixed-signal PCB pairing an HI-35850 ARINC-429
+              transceiver with an STM32 over SPI, designed for avionics bus
+              monitoring, message decoding, and configurable trigger generation.
+            </p>
+
+            <a href="arinc-429.html">
+              View Project →
+            </a>
+          </article>
+
+          <!-- Bandgap reference -->
+          <article class="card">
+            <div class="project-number">02 / ANALOG IC DESIGN</div>
+
+            <h3>MOSFET-Only Subthreshold Bandgap Voltage Reference</h3>
+
+            <p>
+              A SKY130 bandgap reference built from subthreshold MOSFETs, with
+              PTAT/CTAT compensation, an error amplifier with Miller
+              compensation, and full temperature and PSRR characterization:
+              about 89 ppm/°C and 65 dB low-frequency PSRR in simulation.
+            </p>
+
+            <a href="bandgap-reference.html">
+              View Project →
+            </a>
+          </article>
+
+          <!-- Embedded systems -->
+          <article class="card">
+            <div class="project-number">03 / EMBEDDED SYSTEMS</div>
+
+            <h3>STM32 Embedded Sensing &amp; Control Platform</h3>
+
+            <p>
+              An STM32-based control platform integrating timers, PWM, ADC,
+              UART, interrupts, motors, ultrasonic sensing, voltage-level
+              translation, and oscilloscope-based hardware validation.
+            </p>
+
+            <a href="embedded-systems.html">
+              View Project →
+            </a>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-content">
+
+      <span>© 2026 Zoey Situ</span>
+
+      <div class="footer-links">
+        <a
+          href="https://www.linkedin.com/in/zoeysitu"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          LinkedIn
+        </a>
+
+        <a
+          href="Zoey_Situ_Resume.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Résumé
+        </a>
+      </div>
+
+    </div>
+  </footer>
+
+</body>
+</html>
