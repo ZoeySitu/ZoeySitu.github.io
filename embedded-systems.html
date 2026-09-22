@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="pink-yellow">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>STM32 Embedded Sensing &amp; Control Platform | Zoey Situ</title>
+  <meta name="description" content="An STM32 Nucleo-F401RE control system for ECE 298: PWM-driven servo and DC motor, RPM and ultrasonic distance sensing, a buffered BCD display, RGB status, and UART reporting, built and debugged subsystem by subsystem.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="project">
+
+<nav>
+  <div class="container nav-container">
+    <a class="logo" href="index.html">Zoey Situ</a>
+    <div class="nav-links">
+      <a href="index.html#about">About me</a>
+      <a href="index.html#projects">Projects</a>
+      <a href="https://www.linkedin.com/in/zoeysitu" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a href="Zoey_Situ_Resume.pdf" target="_blank" rel="noopener noreferrer">Résumé</a>
+    </div>
+  </div>
+</nav>
+
+<main class="container">
+
+  <section class="hero" aria-labelledby="title">
+    <div class="eyebrow">Embedded Systems · ECE 298</div>
+    <h1 id="title">STM32 Embedded Sensing &amp; Control Platform</h1>
+    <p class="lede">A small-scale process controller built on an STM32 Nucleo-F401RE: a motor-driven pump, a position servo, RPM and distance sensing, a buffered digit display, and status reporting over UART, brought up one subsystem at a time and then run together in real time.</p>
+
+    <dl class="facts">
+      <div><dt>Course</dt><dd>ECE 298, University of Waterloo</dd></div>
+      <div><dt>Tools</dt><dd>STM32CubeIDE, oscilloscope, digital multimeter</dd></div>
+      <div><dt>Hardware</dt><dd>Nucleo-F401RE, DC motor + driver, servo, HC-SR04 ultrasonic sensor, RPM optical sensor, RGB LED, buffered BCD display board</dd></div>
+    </dl>
+
+    <p class="status"><strong>Status: complete.</strong> Every subsystem below is integrated into one control loop and was brought up and checked on real hardware with a scope and a multimeter.</p>
+
+    <figure>
+      <img src="images/embedded-system-photo.png" width="1600" height="900" alt="Placeholder for a photo of the assembled bench setup: 3D-printed frame, Nucleo board, breadboard, motors and sensors.">
+      <figcaption>Placeholder — will be replaced with a photo of the bench setup.</figcaption>
+    </figure>
+  </section>
+
+  <div class="layout">
+
+    <nav class="toc" aria-label="On this page">
+      <p>On this page</p>
+      <ol>
+        <li><a href="#problem">Problem</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#build">Build approach</a></li>
+        <li><a href="#debugging">Debugging the servo</a></li>
+        <li><a href="#results">Results</a></li>
+      </ol>
+    </nav>
+
+    <article class="article">
+
+      <section id="problem" aria-labelledby="h-problem">
+        <h2 id="h-problem">Problem</h2>
+        <p>The assignment was to control a small simulated process, in the shape of a water system: a pump moves "water" out through one of several lines, sensors report back what's happening, and the controller decides what to do next. Underneath that story, it's really an exercise in getting a microcontroller to run several time-sensitive peripherals at once without any of them stepping on each other: PWM outputs, a timer input capture, an external interrupt, an ADC, and a UART link, all sharing one 16 MHz core clock.</p>
+      </section>
+
+      <section id="architecture" aria-labelledby="h-arch">
+        <h2 id="h-arch">System architecture</h2>
+        <p>Everything runs from one Nucleo-F401RE. Two timers do the time-critical work: TIM2 drives the servo, and TIM3 does triple duty, driving the pump motor's two PWM channels and capturing the echo pulse from the distance sensor. An external interrupt counts RPM ticks, ADC1 reads a potentiometer for manual speed control, and a fifth timer (TIM5) keeps a scaled wall clock that schedules the run. Status goes out over UART as one line per sample.</p>
+        <figure>
+          <img src="images/embedded-architecture.png" width="1888" height="1120" alt="Block diagram: the MCU's TIM2, TIM3, EXTI, ADC1 and UART2 connect to a servo, a DC pump motor, an RPM sensor, a distance sensor, an RGB LED, a buffered BCD timer board, a wall clock, and a UART terminal link.">
+          <figcaption>Signal map from the final firmware: which timer, channel and pin drives each peripheral.</figcaption>
+        </figure>
+
+        <div class="table-wrap">
+          <table class="results">
+            <caption>Peripheral map</caption>
+            <thead><tr><th scope="col">Peripheral</th><th scope="col">MCU resource</th><th scope="col">Role</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Servo</th><td class="num">TIM2_CH1 → PA0</td><td>20 ms period, pulse width selects one of four pipeline positions</td></tr>
+              <tr><th scope="row">DC pump motor</th><td class="num">TIM3_CH1 / CH3 → PA6 / PC8</td><td>Two PWM channels set direction; duty cycle sets speed from either the potentiometer or a fixed preset</td></tr>
+              <tr><th scope="row">RPM sensor</th><td class="num">EXTI</td><td>Counts ticks from an optical slot wheel, scaled to an RPM reading</td></tr>
+              <tr><th scope="row">HC-SR04 distance sensor</th><td class="num">GPIO trigger, TIM3_CH2 → PA7</td><td>Trigger pulse out; echo pulse width captured on both edges gives reservoir depth</td></tr>
+              <tr><th scope="row">RGB LED</th><td class="num">GPIO</td><td>Colour indicates the active pipeline</td></tr>
+              <tr><th scope="row">Timer / display board</th><td class="num">Buffered GPIO (BCD)</td><td>3.3 V → 5 V level-shifted digits show the wall-clock hour</td></tr>
+              <tr><th scope="row">Wall clock</th><td class="num">TIM5</td><td>Scaled timebase drives the run schedule</td></tr>
+              <tr><th scope="row">Status link</th><td class="num">UART2</td><td>Setup prompts, then one status line per sample: clock, pipeline, PWM setting, RPM, depth</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="build" aria-labelledby="h-build">
+        <h2 id="h-build">Build approach</h2>
+        <p>Each peripheral got its own small STM32CubeIDE project before anything was combined: a GPIO blink test, a timer-driven blink, PWM for the servo, PWM plus RPM feedback for the motor, input capture for the distance sensor, EXTI for the RPM sensor, GPIO for the BCD display and RGB LED, and a scaled timer for the wall clock. Getting each one right in isolation, with its own pin map and its own quick check on a scope, made the final integration mostly a matter of merging code that already worked rather than debugging everything at once.</p>
+        <p>The servo and the distance sensor both needed external signal buffering, since the Nucleo's 3.3 V logic isn't enough to drive a 5 V servo or a 5 V-powered BCD display directly. Both got a buffer stage on a breadboard, powered from a separate 5 V supply and referenced back to a common ground with the MCU.</p>
+      </section>
+
+      <section id="debugging" aria-labelledby="h-debug">
+        <h2 id="h-debug">Debugging the servo</h2>
+        <p>The servo wasn't responding correctly to the PWM signal it was supposed to be tracking. I went through it step by step: checked power and grounding first, then probed the signal line with an oscilloscope, then compared what I saw against the waveform the firmware should have been generating.</p>
+        <p>That comparison is what caught it. The pin I'd assumed was tied to the timer's output wasn't actually the one driving the servo signal, so the code was updating a channel that had no path to the hardware. Re-reading the pin mapping in the datasheet more carefully turned up the mismatch. Once the timer channel and the physical pin agreed with each other, the servo tracked the commanded pulse width immediately.</p>
+        <figure class="narrow">
+          <img src="images/embedded-pwm-debug.png" width="1600" height="760" alt="Placeholder for an oscilloscope capture comparing the expected and actual servo PWM waveform before and after the pin-mapping fix.">
+          <figcaption>Placeholder — will be replaced with the scope capture from this fix.</figcaption>
+        </figure>
+        <p class="callout">The broader lesson was that firmware and hardware have to be debugged together. The code can look correct and still be wrong, because a register update only matters if it reaches the pin you think it does — and that's something you confirm by measuring, not by reading the code again.</p>
+      </section>
+
+      <section id="results" aria-labelledby="h-results">
+        <h2 id="h-results">Results</h2>
+        <ul>
+          <li>All eight peripherals above run together from one control loop: the servo, the motor with its two speed sources, RPM sensing, distance sensing, the RGB indicator, the buffered BCD display, the wall clock, and the UART status link.</li>
+          <li>Signal timing, integrity and the 3.3 V ↔ 5 V level translation were checked directly with an oscilloscope and a multimeter rather than assumed from the code.</li>
+          <li>The system reports one line per sample over UART — clock time, active pipeline, PWM setting, RPM, and depth — alongside the setup prompts that configure a run.</li>
+        </ul>
+      </section>
+
+    </article>
+  </div>
+</main>
+
+<footer>
+  <div class="container footer-content">
+    <span>© 2026 Zoey Situ</span>
+    <div class="footer-links">
+      <a href="index.html#projects">All projects</a>
+      <a href="https://www.linkedin.com/in/zoeysitu" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a href="Zoey_Situ_Resume.pdf" target="_blank" rel="noopener noreferrer">Résumé</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var links = document.querySelectorAll('.toc a');
+    if (!('IntersectionObserver' in window) || !links.length) return;
+    var byId = {};
+    links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          links.forEach(function (a) { a.classList.remove('is-active'); });
+          var a = byId[e.target.id]; if (a) a.classList.add('is-active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    Object.keys(byId).forEach(function (id) {
+      var el = document.getElementById(id); if (el) obs.observe(el);
+    });
+  })();
+</script>
+</body>
+</html>
